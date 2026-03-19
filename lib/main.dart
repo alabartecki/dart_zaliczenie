@@ -10,12 +10,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text("KrakFlow"),
+        ),
+        body: Center(
+          child: Column(
+          children: [
+            Text("Organizacja studiow"),
+            Text("Dzisiejsze zadania"),
+          ],
+        ),
+        ),
+        ),
     );
   }
 }
