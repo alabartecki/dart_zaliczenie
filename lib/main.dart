@@ -7,25 +7,131 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static const List<Task> tasks = [
+    Task(title: "Przedszkolne zabawy", deadline: "za 2 dni", done: true, priority: "średni"),
+    Task(title: "Gra w berka", deadline: "jutro",done: false, priority: "niski"),
+    Task(title: "Gra w klasy", deadline: "pojutrze",done: false, priority: "średni"),
+    Task(title: "Zabawa na skakankach", deadline: "za tydzien",done: false, priority: "wysoki")
+  ];
+
+
   @override
   Widget build(BuildContext context) {
+
+    int completedTasks = tasks.where((t) => t.done).length;
+
     return MaterialApp(
         home: Scaffold(
           appBar: AppBar(
             title: Text("KrakFlow"),
         ),
-        body: Center(
-          child: Column(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("Organizacja studiow"),
-            Text("Dzisiejsze zadania"),
-          ],
-        ),
+            Text(
+              "Masz dziś ${tasks.length} zadania",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w100,
+                color: Colors.blue,
+              ),
+            ),
+            Text(
+              "Wykonano: $completedTasks",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w100,
+                color: Colors.blue,
+              ),
+            ),
+            SizedBox(height: 18),
+            Text(
+              "Dzisiejsze zadania:",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+                fontStyle: FontStyle.italic,
+              ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                    return TaskCard(
+                        task: tasks[index]);
+                    }
+                  ),
+                ),
+          ]
         ),
         ),
     );
   }
 }
+
+class Task {
+  final String title;
+  final String deadline;
+  final bool done;
+  final String priority;
+
+  const Task({
+    required this.title,
+    required this.deadline,
+    required this.done,
+    required this.priority});
+}
+
+class TaskCard extends StatelessWidget {
+  final Task task;
+
+  const TaskCard({
+    super.key,
+    required this.task
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.all(20),
+        child: Card(
+        child: ListTile(
+          leading: Icon(
+              task.done ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: task.done ? Colors.green : Colors.grey,
+          ),
+          title: Text(
+              task.title,
+              style: TextStyle(
+                  decoration: task.done ? TextDecoration.lineThrough: null,
+                  fontWeight: FontWeight.bold
+              ),
+          ),
+          subtitle: Text("Termin: ${task.deadline} | priorytet: ${task.priority}"),
+        ),
+        ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
