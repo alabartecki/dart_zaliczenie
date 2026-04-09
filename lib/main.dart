@@ -75,8 +75,23 @@ class _MyHomeScreenState extends State<HomeScreen> {
           onPressed: () async {
             final Task? newTask = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => AddTaskScreen(),
+                PageRouteBuilder(
+                  transitionDuration: Duration(milliseconds: 800), //wolniej sie animuje
+                  pageBuilder: (context, animation, secondaryAnimation) => AddTaskScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    final offsetAnimation = Tween<Offset>(
+                    begin: Offset(1.0, 0.0),
+                    end:  Offset.zero,
+                    ).animate(CurvedAnimation(  //odbija sie na koncu
+                      parent: animation,
+                      curve: Curves.easeInOut,
+                    ));
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  }
                 ),
             );
             if (newTask != null ){
@@ -142,7 +157,7 @@ class AddTaskScreen extends StatelessWidget{
   Widget build(BuildContext context) {
       return Scaffold(
         appBar: AppBar(
-          title: Text("Nowe zadanie"),
+          title: Text("Nowe zadanie:"),
         ),
         body:
             Padding(
@@ -158,7 +173,7 @@ class AddTaskScreen extends StatelessWidget{
                         contentPadding: EdgeInsets.all(20),
                       ),
                     ),
-                    //
+                    SizedBox(height: 16),
                     TextField(
                       controller: deadlineController,
                       decoration: InputDecoration(
@@ -167,6 +182,7 @@ class AddTaskScreen extends StatelessWidget{
                         contentPadding: EdgeInsets.all(20),
                       ),
                     ),
+                    SizedBox(height: 16),
                     TextField(
                       controller: priorityController,
                       decoration: InputDecoration(
@@ -176,14 +192,25 @@ class AddTaskScreen extends StatelessWidget{
 
                       ),
                     ),
+                    SizedBox(height: 16),
                     ElevatedButton(
                         onPressed: () {
+                          // sprawdzam czy pola nie są puste lub nie zawierają samych spacji
+                          if (titleController.text.trim().isEmpty ||
+                              deadlineController.text.trim().isEmpty ||
+                              priorityController.text.trim().isEmpty) {
+
+                            // return - Navigator.pop się nie wykona
+                            return;
+                          }
+
                           final newTask = Task(
                               title: titleController.text,
                               deadline: deadlineController.text,
                               done: false,
                               priority: priorityController.text,
                           );
+
                           Navigator.pop(context, newTask);
                         },
                         child: Text("Zapisz"),
