@@ -33,6 +33,7 @@ class Task {
     required this.deadline,
     required this.done,
     required this.priority,
+
   });
 }
 
