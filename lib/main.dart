@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'task_repository.dart';
+import  'task_api_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,11 +23,62 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _MyHomeScreenState();
 }
 
+class TaskListScreen extends StatefulWidget {
+  const TaskListScreen({super.key});
+  @override
+  State<TaskListScreen> createState() => _TaskListScreenState();
+}
 
+class _TaskListScreenState extends State<TaskListScreen> {
+  late Future<List<Task>> tasksFuture;
+  @override
+  void initState() {
+    super.initState();
+    tasksFuture = TaskApiService.fetchTasks();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Task>>(
+      future: tasksFuture,
+      builder: (context, snapshot) {
+
+        // obsługa loadera
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        // obsługa błędu
+        if (snapshot.hasError) {
+          return Center(
+            child: Text("Błąd: ${snapshot.error}"),
+          );
+        }
+
+        final tasks = snapshot.data!;
+        return ListView.builder(
+          itemCount: tasks.length,
+          itemBuilder: (context, index) {
+              // widget TaskCard dla każdego elementu
+          },
+        );
+      },
+    );
+  }
+}
 
 class _MyHomeScreenState extends State<HomeScreen> {
 
   String selectedFilter = "wszystkie";
+
+  late Future<List<Task>> _tasksFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tasksFuture = TaskApiService.fetchTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +156,38 @@ class _MyHomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredTasks.length,
-                itemBuilder: (context, index) {
+              child: FutureBuilder<List<Task>>(
+                future: _tasksFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Błąd: ${snapshot.error}"));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text("Brak zadań"));
+                  }
+
+                  // Przypisujemy pobrane zadania do listy do filtrowania
+                  List<Task> tasksFromServer = snapshot.data!;
+
+                  // Logika filtrowania (możesz ją zostawić tutaj)
+                  List<Task> filteredTasks = tasksFromServer;
+                  if (selectedFilter == "wykonane") {
+                    filteredTasks = tasksFromServer.where((t) => t.done).toList();
+                  } else if (selectedFilter == "do zrobienia") {
+                    filteredTasks = tasksFromServer.where((t) => !t.done).toList();
+                  }
+
+                  return ListView.builder(
+                    itemCount: filteredTasks.length,
+                    itemBuilder: (context, index) {
+
                   final task = filteredTasks[index];
 
                   return Dismissible(
@@ -168,10 +249,12 @@ class _MyHomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         ),
+      ],
+    ),
 
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
