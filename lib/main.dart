@@ -33,68 +33,6 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _MyHomeScreenState();
 }
 
-class TaskListScreen extends StatefulWidget {
-
-  final ValueChanged<List<Task>> onTasksLoaded;
-
-  const TaskListScreen({
-    super.key,
-    required this.onTasksLoaded,
-  });
-
-  @override
-  State<TaskListScreen> createState() => _TaskListScreenState();
-}
-
-class _TaskListScreenState extends State<TaskListScreen> {
-
-  late Future<List<Task>> tasksFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    tasksFuture = TaskApiService.fetchTasks();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<Task>>(
-
-
-      future: tasksFuture,
-      builder: (context, snapshot) {
-
-        // obsługa loadera
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        // obsługa błędu
-        if (snapshot.hasError) {
-          return Center(
-            child: Text("Błąd: ${snapshot.error}"),
-          );
-        }
-
-        final tasks = snapshot.data ?? [];
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          widget.onTasksLoaded(tasks);
-        });
-
-        return ListView.builder(
-          itemCount: tasks.length,
-          itemBuilder: (context, index) {
-              // widget TaskCard dla każdego elementu
-          },
-        );
-      },
-    );
-  }
-}
-
 class _MyHomeScreenState extends State<HomeScreen> {
 
   int allTasksCount = 0;
@@ -118,15 +56,6 @@ class _MyHomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Task> filteredTasks = TaskRepository.tasks;
-
-    if (selectedFilter == "wykonane") {
-      filteredTasks = TaskRepository.tasks.where((task) => task.done).toList();
-    } else if (selectedFilter == "do zrobienia") {
-      filteredTasks = TaskRepository.tasks.where((task) => !task.done).toList();
-    }
-
-    int completedTasks = TaskRepository.tasks.where((t) => t.done).length;
 
     return Scaffold(
         appBar: AppBar(
@@ -137,11 +66,10 @@ class _MyHomeScreenState extends State<HomeScreen> {
             IconButton(
               icon: Icon(
                 Icons.delete_sweep,
-                // color: TaskRepository.tasks.isEmpty ? Colors.grey : Colors.red,
                 color: Colors.red,
 
               ),
-              onPressed: TaskRepository.tasks.isEmpty
+              onPressed: allTasksCount == 0
                   ? () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Brak zadań do usunięcia!")),
