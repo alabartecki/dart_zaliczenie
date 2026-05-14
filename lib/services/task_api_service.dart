@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'task_repository.dart';
+import '../models/task.dart';
 import 'dart:math';
 
 
@@ -20,6 +20,7 @@ class TaskApiService {
       final List todos = data["todos"];
       return todos.map((todo) {
         return Task(
+          id: Random().nextInt(1000000),
           title: todo["todo"],
           deadline: "brak", done: todo["completed"],
           priority: priority,
